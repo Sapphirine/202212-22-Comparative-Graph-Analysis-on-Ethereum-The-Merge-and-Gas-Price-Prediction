@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<html>
+
+<head>
+  <script type="text/javascript" src="https://d3js.org/d3.v3.js"></script>
+  <!-- <script type="text/javascript" src="https://d3js.org/d3.v4.js"></script> -->
+  <!-- <script src="fisheye.js" charset="utf-8"></script> -->
+  <style type="text/css">
+    body{ font: Arial 12px; text-align: center; }
+    .link{
+      stroke: #ccc;
+    }
+    .node text{
+      pointer-events: none;
+      font: sans-serif;
+    }
+    .formal {color: blue;
+            font-size: 26px;
+            text-indent: 2em;
+            text-align: left;
+    }
+  </style>
+</head>
+
+
+<body>
+
+<script type="text/javascript">
+
+var margin = {top: 60, right: 60, bottom: 60, left: 60},
+    // width = 960 - margin.left - margin.right,
+    // height = 700 - margin.top - margin.bottom;
+    width = 960, height = 700;
+
+// var c10 = d3.scale.category10();
+
+var svgElement = d3.select("body")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+
+d3.csv("D:\\william\\Columbia\\Fall 2022\\EECS 6893 BDA\\project\\codes\\NetworkData\\post_edge_selected.csv", function(dataset) {
+
+  var idx = 0;
+  var id_dict = {};
+  var in_degree_dict = {};
+  var out_degree_dict = {};
+  var degree_dict = {};
+
+  dataset.forEach(function(r) {
+
+      if (!id_dict[r.source]) {
+          id_dict[r.source] = idx;
+          idx++;
+      };
+
+      if (!id_dict[r.target]) {
+          id_dict[r.target] = idx;
+          idx++;
+      };
+
+      if (!out_degree_dict[r.source]) {
+          out_degree_dict[r.source] = 0;
+      };
+      out_degree_dict[r.source] += r.transaction_count;
+
+      if (!in_degree_dict[r.target]) {
+          in_degree_dict[r.target] = 0;
+      };
+      in_degree_dict[r.target] += r.transaction_count;
+
+      if (!degree_dict[r.source]) {
+          degree_dict[r.source] = 0;
+      };
+      degree_dict[r.source] += r.transaction_count;
+
+      if (!degree_dict[r.target]) {
+          degree_dict[r.target] = 0;
+      };
+      degree_dict[r.target] += r.transaction_count;
+
+  });
+
+
+  var nodes = [];
+
+  Object.keys(id_dict).forEach(function(key) {
+      nodes.push({
+          user: key,
+          id: id_dict[key],
+          out_degree: out_degree_dict[key], 
+          in_degree: in_degree_dict[key], 
+          degree: degree_dict[key]
+      })
+  });
+
+
+  var my_nodes = nodes.map(function(n) {
+    return {user: n.user, id:n.id, out_degree:n.out_degree, in_degree:n.in_degree, degree:n.degree}
+  });
+
+
+  var links = [];
+  dataset.forEach(function(r) {
+      links.push({
+          source: id_dict[r.source],
+          target: id_dict[r.target],
+          weight: parseInt(r.transaction_count),
+          total_value: parseInt(r.total_value * 1e-18),
+          min_gas_price: parseInt(r.min_gas_price * 1e-9),
+      });
+  });
+
+  var my_links = links.map(function(lnk) {
+    return {source:lnk.source, target:lnk.target, weight:lnk.weight}
+  });
+
+
+  var force = d3.layout.force()
+                .size([width, height])
+                .nodes(my_nodes)
+                .links(my_links)
+                .gravity(0.5)
+                .charge(-400)
+                .linkDistance(100)
+
+  var link = svgElement.selectAll(".link")
+                      .data(my_links)
+                      .enter()
+                      .append("line")
+                      .attr('stroke-width', function(d) {return d.weight / 200;})
+                      .attr("class", "link");
+
+  var node = svgElement.selectAll(".node")
+                      .data(my_nodes)
+                      .enter()
+                      .append("g")
+                      .attr("class", "node")
+                      .call(force.drag)
+
+  var label = node.append("text")
+                  .attr("dx", "1.6em")
+                  .attr("dy", "0.35em")
+                  // .attr("font-size", 12)
+
+  var circle = node.append("circle")
+                  .attr("r", function(d) {return (Math.log(d.degree) + 1) / 10;})
+                  // .attr("fill", function(d) {return c10(d.degree*10);})
+
+
+  // d3.forceCollide().radius(d => d.r + 1).iterations(5)
+
+  // var simulation = d3.forceSimulation()
+  //       .force('collision', rectCollide().size(function(d) {return [1, 1]}))
+  //       .nodes(nodes);
+
+
+  force.on("tick", function() {
+    node.attr("r", 4)
+        .attr("cx", function(d) {return d.x;})
+        .attr("cy", function(d) {return d.y;});
+
+    link.attr("x1", function(d) {return d.source.x;})
+        .attr("y1", function(d) {return d.source.y;})
+        .attr("x2", function(d) {return d.target.x;})
+        .attr("y2", function(d) {return d.target.y;});
+
+    node.attr("transform", function(d) {return "translate(" + d.x + "," + d.y + ")";});
+  });
+
+  force.start();
+
+
+  // var fisheye = d3.fisheye.circular().radius(160);
+
+  // svgElement.on("mousemove", function() {
+    
+  //   fisheye.focus(d3.mouse(this));
+    
+  //   node.each(function(d) { d.fisheye = fisheye(d); })
+
+  //   node.selectAll("circle")
+  //       .attr("cx", function(d) {return d.fisheye.x - d.x;})
+  //       .attr("cy", function(d) {return d.fisheye.y - d.y;})
+  //       .attr("r", function(d) {return d.fisheye.z * 16;});
+
+  //   node.select("text")
+  //       .attr("dx", function(d) {return d.fisheye.x - d.x;})
+  //       .attr("dy", function(d) {return d.fisheye.y - d.y;})
+  //       .attr("style", function(d){return "font-size:" + d.fisheye.z * 12 + "px";})
+  //       .attr("dx", "1.6em")
+  //       .attr("dy", "0.35em");
+
+  //   link.attr("x1", function(d) {return d.source.fisheye.x;})
+  //       .attr("y1", function(d) {return d.source.fisheye.y;})
+  //       .attr("x2", function(d) {return d.target.fisheye.x;})
+  //       .attr("y2", function(d) {return d.target.fisheye.y;});
+
+  // });
+
+});
+
+</script>
+
+</body>
+
+</html>
