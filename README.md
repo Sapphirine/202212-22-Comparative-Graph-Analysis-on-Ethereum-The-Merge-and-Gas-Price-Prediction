@@ -10,4 +10,4 @@ To reproduce the results of section 6.2 in the report, please run the `Daily_Tra
 To reproduce the results of section 6.3 in the report, please `git clone` this project and run the `Gas_Price_Prediction.ipynb` notebook on a Google colab.
 
 ## Demo
-For visualizations of the parts above, please clone the git repo and open `/Frontend/index.html`.  
+For visualizations of the parts above, please `git clone` this project and open `/Frontend/index.html`.  
