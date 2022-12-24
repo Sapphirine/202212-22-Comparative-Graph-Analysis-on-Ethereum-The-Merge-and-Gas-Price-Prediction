@@ -12,6 +12,7 @@ def gen_data(v, **kwargs):
   data = Data()
   """target"""
   def _y(v, target):
+    """Gets target column min in aggerated object(a time window)"""
     return v[target].min()
   data.y = _y(v, **kwargs['y'])
 

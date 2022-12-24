@@ -1,3 +1,4 @@
+"""config file for experiments"""
 import torch
 
 data_file_name = 'test_data.pt'
@@ -14,7 +15,8 @@ init_config_name = 'init_config.pt'
 ############
 # preprocess config
 ############
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+# device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cpu')
 
 numeric_features = ['value', 'gas', 'gas_price', 'receipt_cumulative_gas_used',
                     'receipt_gas_used', 'transaction_type']

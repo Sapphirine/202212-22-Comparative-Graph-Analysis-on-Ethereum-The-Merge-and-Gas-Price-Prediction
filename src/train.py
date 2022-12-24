@@ -11,6 +11,7 @@ from .model import ETHGT
 data_path = os.path.join(os.getcwd(), data_file_name)
 
 def init_model_dataset(config, data_dir=None):
+  """Initializes ETHGT model from searched best parameters"""
   window_size = config['window_size']
   batch_size = config['batch_size']
 
@@ -32,6 +33,7 @@ def init_model_dataset(config, data_dir=None):
   return model, datamodule
 
 def train(init_config, trainer_config):
+  """Trains model with Pytorch Lightning Trainer"""
   init_config = torch.load(init_config)
   model, datamodule = init_model_dataset(init_config, data_dir=data_path)  
   log_n_steps = len(datamodule.train_dataset) // init_config['batch_size']

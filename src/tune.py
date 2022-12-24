@@ -25,6 +25,7 @@ def train_tune_checkpoint(config,
                                 num_epochs=10,
                                 num_gpus=0,
                                 data_dir=data_path):
+    """Training method for Ray Tune"""                                
     window_size = config['window_size']
     batch_size = config['batch_size']
 
@@ -65,7 +66,7 @@ def train_tune_checkpoint(config,
     trainer.fit(model=model, datamodule=datamodule)
 
 def tune_pbt(num_samples=10, num_epochs=10, gpus_per_trial=0, checkpoint_dir=None):
-    
+    """Tunes hyper-parameter with PBT method."""
     window_size = tune.choice([5, 10])
     batch_size = tune.choice([32, 64])
     lr = tune.loguniform(1e-5, 1e-2)

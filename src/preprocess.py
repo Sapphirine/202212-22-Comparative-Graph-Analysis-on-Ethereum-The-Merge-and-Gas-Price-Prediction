@@ -11,16 +11,26 @@ from .embedding import gen_data
 def parallel_gen_data(agg_obj, data_params,
                       gen_data=gen_data,
                       preprocess_config=preprocess_config):
-
+  """Parallel generates graph data with Ray
+  
+  Args:
+    agg_obj: pd.groupby
+    data_params: dict, parameters for generating data
+    preprocess_config: dict, parameters for ray init
+  
+  Returns:
+    data: pd.DataFrame[Pytorch_geometric Data], index is timestep
+  """
   gen_data = partial(gen_data, **data_params)
 
-  """parallel
-  A day with 720 objects, each train 5 epochs on 8 cpus -> 2h!
-  110MB+
-  """
+  # parallel
+  # A day with 720 objects, each train 5 epochs on 8 cpus -> 2h!
+  # 110MB+
+  #
   
   ray.init(num_cpus=preprocess_config['num_cpus'], 
-            num_gpus=preprocess_config['num_gpus'])
+            num_gpus=preprocess_config['num_gpus']
+            )
 
   @ray.remote
   def pargen_data(kv, gen_data_func):
@@ -38,6 +48,7 @@ def parallel_gen_data(agg_obj, data_params,
 def scale_numeric_features(df, 
                            numeric_features=numeric_features, 
                            scaler=StandardScaler()):
+  """Scales numerical features in df"""
   scaler.fit(df[numeric_features])
   df.loc[:, numeric_features] = scaler.transform(df[numeric_features])
   return df, scaler

@@ -7,7 +7,8 @@ from torch_geometric.nn import GATv2Conv, global_mean_pool
 
 class AttentionBlock(nn.Module):
     def __init__(self, **kwargs):
-        """
+        """A Pytorch implementation of Transformer Attention block.
+
         """
         super().__init__()
 
@@ -30,6 +31,7 @@ class AttentionBlock(nn.Module):
         return x
 
 class CausalTrans(torch.nn.Module):
+  """Transformer Encoder with causal mask"""
   def __init__(self, **kwargs):
     super().__init__()
     num_layers = 3 if 'num_layers' not in kwargs else kwargs['num_layers']
@@ -41,6 +43,8 @@ class CausalTrans(torch.nn.Module):
     return x 
 
 class ETHGT(pl.LightningModule):
+  """Proposed model, extracts graph features with GATConv,
+     which are then pass through Causal Transformer"""
   def __init__(self, config):
     super().__init__()
 
