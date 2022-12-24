@@ -125,6 +125,7 @@ d3.csv("https://raw.githubusercontent.com/Minalinnski/EECS6893_Final_project/mai
     return {source:lnk.source, target:lnk.target, weight:lnk.weight}
   });
 
+  console.log(links);
 
   var force = d3.layout.force()
                 .size([width, height])
